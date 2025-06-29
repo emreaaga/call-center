@@ -26,23 +26,23 @@ export function getMenuList(pathname: string): Group[] {
     {
       menus: [
         {
-          href: "/",
-          label: "Главная",
+          href: "/outgoing",
+          label: "Исходящие звонки",
           icon: main,
         },
         {
-          href: "/create-request",
-          label: "Создать заявку",
+          href: "/incoming",
+          label: "Входящие звонки",
           icon: file,
         },
         {
-          href: "/requests",
-          label: "Список шаблонов",
+          href: "/collections",
+          label: "Список коллекций",
           icon: file,
         },
         {
-          href: "/settings",
-          label: "Настройки",
+          href: "/sip-settings",
+          label: "SIP Настройки",
           icon: settings,
         }
       ]

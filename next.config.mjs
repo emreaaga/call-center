@@ -13,7 +13,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',                  
-        destination: 'http://185.8.212.114:8987/api/:path*',  
+        destination: 'https://app.robotcall.uz/api/:path*',  
       },
     ]
   },

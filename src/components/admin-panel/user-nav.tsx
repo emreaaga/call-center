@@ -20,9 +20,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { logout } from '@/hooks/auth';
+import { useRouter } from 'next/navigation'
 
 export function UserNav() {
+  const router = useRouter()
+  
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', 
+      })
+    } catch (err) {
+      console.error('Logout error', err)
+    } finally {
+      router.replace('/login')
+    }
+  }
   return (
     <DropdownMenu>
       <div className="px-2 pt-2 pb-1">
@@ -60,23 +74,23 @@ export function UserNav() {
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/" className="flex items-center">
+            <Link href="/outgoing" className="flex items-center">
               <LayoutGrid className="w-4 h-4 mr-3 text-muted-foreground" />
-              Главная
+              Исходящие звонки
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center">
+            <Link href="/sip-settings" className="flex items-center">
               <UserIcon className="w-4 h-4 mr-3 text-muted-foreground" />
-              Профиль
+              Настройки
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={logout} className="cursor-pointer flex items-center">
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer flex items-center">
           <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
           Выйти
         </DropdownMenuItem>

@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2Icon } from "lucide-react"
 import { useState } from "react"
-import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
 
 export interface LoginFormProps

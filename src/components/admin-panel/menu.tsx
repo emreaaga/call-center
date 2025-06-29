@@ -3,6 +3,7 @@
 import Link from "next/link";
 import LogOut from '@/icons/navbar/logout.svg'
 import { usePathname } from "next/navigation";
+import { useRouter } from 'next/navigation'
 
 import { cn } from "@/lib/utils";
 import { getMenuList } from "@/lib/menu-list";
@@ -22,6 +23,21 @@ interface MenuProps {
 export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
+
+  const router = useRouter()
+  
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', 
+      })
+    } catch (err) {
+      console.error('Logout error', err)
+    } finally {
+      router.replace('/login')
+    }
+  }
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
@@ -86,7 +102,7 @@ export function Menu({ isOpen }: MenuProps) {
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => { }}
+                    onClick={handleLogout}
                     variant="ghost"
                     className="w-full justify-center h-10 mt-5 text-white hover:bg-[#1D4ED8] hover:text-white"
                   >
