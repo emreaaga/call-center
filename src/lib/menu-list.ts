@@ -26,7 +26,7 @@ export function getMenuList(pathname: string): Group[] {
     {
       menus: [
         {
-          href: "/outgoing",
+          href: "/",
           label: "Исходящие звонки",
           icon: main,
         },

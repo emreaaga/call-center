@@ -1,27 +1,46 @@
-'use client'
+'use client';
 
-import { LoginForm } from '@/components/admin-panel/login-form'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { LoginForm } from '@/components/admin-panel/login-form';
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const params = useSearchParams();
+  const redirectTo = params.get('from') || '/outgoing';
+
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!mounted) return;
+        if (res.ok) {
+          router.replace(redirectTo);
+        }
+      })
+      .catch(() => {
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [redirectTo, router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    const formData = new FormData(e.currentTarget)
-    const phone = formData.get('login')?.toString()
-    const password = formData.get('password')?.toString()
+    const formData = new FormData(e.currentTarget);
+    const phone = formData.get('login')?.toString();
+    const password = formData.get('password')?.toString();
 
     if (!phone || !password) {
-      setError('Пожалуйста, заполните все поля.')
-      setLoading(false)
-      return
+      setError('Пожалуйста, заполните все поля.');
+      setLoading(false);
+      return;
     }
 
     try {
@@ -30,16 +49,15 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ phone, password }),
-      })
+      });
 
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.message)
-
-      router.replace('/outgoing')
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || 'Ошибка авторизации');
+      router.replace(redirectTo);
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -55,13 +73,11 @@ export default function LoginPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col">
-            {error && (
-              <div className="mb-2 text-red-600 font-medium">{error}</div>
-            )}
+            {error && <div className="mb-2 text-red-600 font-medium">{error}</div>}
             <LoginForm onSubmit={handleSubmit} loading={loading} />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

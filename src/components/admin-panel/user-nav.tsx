@@ -74,7 +74,7 @@ export function UserNav() {
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/outgoing" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <LayoutGrid className="w-4 h-4 mr-3 text-muted-foreground" />
               Исходящие звонки
             </Link>
