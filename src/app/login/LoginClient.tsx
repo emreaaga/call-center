@@ -14,7 +14,6 @@ export default function LoginClient({ redirectTo }: LoginClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Если уже залогинены — сразу редирект
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {

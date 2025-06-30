@@ -7,6 +7,6 @@ type Props = {
 };
 
 export default function LoginPage({ searchParams }: Props) {
-  const redirectTo = searchParams.from ?? '/outgoing';
+  const redirectTo = searchParams.from ?? '/';
   return <LoginClient redirectTo={redirectTo} />;
 }
