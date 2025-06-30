@@ -2,9 +2,19 @@
 
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import React from "react";
-import SettingsCard from "@/components/admin-panel/settings-card";
 import { IncomingCards } from "@/components/admin-panel/incoming-cards";
 import { DataTable } from "@/components/admin-panel/data-table";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+} from "@/components/ui/select";
+import { SearchIcon } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { z } from "zod";
 
@@ -16,14 +26,6 @@ interface IncomingCall {
   recording_url: string | null;
 }
 
-interface IncomingResponse {
-  calls: IncomingCall[];
-  total: number;
-  page: number;
-  per_page: number;
-}
-
-// Zod-схема для одной записи
 const IncomingCallSchema = z.object({
   id: z.number(),
   phone: z.string(),
@@ -32,15 +34,6 @@ const IncomingCallSchema = z.object({
   recording_url: z.string().nullable(),
 });
 
-// Zod-схема для всего ответа
-const IncomingResponseSchema = z.object({
-  calls: z.array(IncomingCallSchema),
-  total: z.number(),
-  page: z.number(),
-  per_page: z.number(),
-});
-
-// Колонки для таблицы
 const columns: ColumnDef<IncomingCall>[] = [
   { accessorKey: "id", header: "ID" },
   { accessorKey: "phone", header: "Телефон" },
@@ -89,7 +82,14 @@ export default function SettingsPage() {
         return res.json();
       })
       .then(json => {
-        const parsed = IncomingResponseSchema.safeParse(json);
+        const parsed = z
+          .object({
+            calls: z.array(IncomingCallSchema),
+            total: z.number(),
+            page: z.number(),
+            per_page: z.number(),
+          })
+          .safeParse(json);
         if (!parsed.success) {
           console.error(parsed.error);
           throw new Error("Неправильный формат ответа API");
@@ -105,10 +105,32 @@ export default function SettingsPage() {
 
   return (
     <ContentLayout title="Статистика входящих звонков">
-      <IncomingCards/>
+      <IncomingCards />
+      <div className="flex items-center gap-4 mt-6 mb-4">
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder="Поиск по телефону"
+            className="pl-10 w-60 rounded-2xl"
+          />
+        </div>
+        <Select>
+          <SelectTrigger className="w-48 rounded-2xl">
+            <SelectValue placeholder="Статус" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Статусы (заглушка)</SelectLabel>
+              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="answered">Отвеченные</SelectItem>
+              <SelectItem value="missed">Пропущенные</SelectItem>
+              <SelectItem value="pending">В ожидании</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Таблица снизу */}
-      <div className="mt-6">
+      <div>
         {loading && <div>Загрузка входящих звонков…</div>}
         {error && <div className="text-red-600">Ошибка: {error}</div>}
         {!loading && !error && (

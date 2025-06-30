@@ -8,7 +8,7 @@ export default function SipPage() {
 
 
   return (
-    <ContentLayout title="Список SIP-коннектов">
+    <ContentLayout title="Список коллекций">
       <SipTable/>
     </ContentLayout>
   );

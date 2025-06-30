@@ -1,15 +1,9 @@
-// middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-console.log('🛠 middleware.ts загружен')
-
-export function middleware(req: NextRequest) {
-  console.log('🛠 middleware fired for', req.nextUrl.pathname)
-  return NextResponse.next()
+import { NextResponse, NextRequest } from 'next/server'
+ 
+export function middleware(request: NextRequest) {
+  return NextResponse.redirect(new URL('/home', request.url))
 }
-
-// пока что обрабатываем все запросы (для проверки)
+ 
 export const config = {
-  matcher: '/:path*',
+  matcher: '/about/:path*',
 }

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     res.cookies.set('token', data.access_token, {
       httpOnly: true,
       path: '/',
-      maxAge: data.expires_in, // в секундах, у вас 43200
+      maxAge: data.expires_in,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     })

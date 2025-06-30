@@ -22,12 +22,12 @@ const infoCards: Array<{
   Icon: React.FC<React.SVGProps<SVGSVGElement>>
   percent: number
 }> = [
-  { label: 'total_calls_today', title: 'Всего звонков сегодня', Icon: TodayIcon, percent: 0 },
-  { label: 'answered_calls', title: 'Отвеченные звонки', Icon: AnsweredIcon, percent: 0 },
-  { label: 'missed_calls', title: 'Пропущенные звонки', Icon: MissedIcon, percent: 0 },
-  { label: 'average_duration', title: 'Средняя длительность', Icon: AvrIcon, percent: 0 },
-  { label: 'transferred_calls', title: 'Переведено на оператора', Icon: TransferIcon, percent: 0 },
-]
+    { label: 'total_calls_today', title: 'Всего звонков сегодня', Icon: TodayIcon, percent: 0 },
+    { label: 'answered_calls', title: 'Отвеченные звонки', Icon: AnsweredIcon, percent: 0 },
+    { label: 'missed_calls', title: 'Пропущенные звонки', Icon: MissedIcon, percent: 0 },
+    { label: 'average_duration', title: 'Средняя длительность', Icon: AvrIcon, percent: 0 },
+    { label: 'transferred_calls', title: 'Переведено на оператора', Icon: TransferIcon, percent: 0 },
+  ]
 
 export function IncomingCards() {
   const [stats, setStats] = React.useState<Stats | null>(null)
@@ -51,19 +51,20 @@ export function IncomingCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
       {infoCards.map(({ label, title, Icon, percent }) => (
-        <Card key={label} className="flex flex-col p-3 w-45 h-32">
-          <CardHeader className="flex items-start gap-2 p-0">
+        <Card key={label} className="flex flex-col p-3 w-48 h-36">
+          <CardHeader className="flex items-start gap-3 p-0">
             <div
               className="flex items-center justify-center rounded-lg"
-              style={{ backgroundColor: '#E4F2FD', width: 34, height: 34 }}
+              style={{ backgroundColor: '#E4F2FD', width: 32, height: 32 }}
             >
-              <Icon className="h-4 w-4" />
+              {/* Подросли до h-6 w-6 */}
+              <Icon className="h-6 w-6" />
             </div>
             <CardTitle className="text-xs text-left flex-1 p-0 leading-tight">
               {title}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex items-end justify-between p-0">
+          <CardContent className="flex items-baseline gap-1 p-0">
             <div className="text-xl font-bold text-left">
               {label === 'average_duration'
                 ? stats[label] || '—'

@@ -22,10 +22,9 @@ export default function SipSettingsPage() {
     try {
       const res = await fetch(`/api/sip/${uuid}`, {
         method: 'DELETE',
-        credentials: 'include',      // <<< вот это важно!
+        credentials: 'include', 
       })
       if (!res.ok) throw new Error(`Ошибка ${res.status}`)
-      // после успешного удаления — можно перезагрузить список
       router.refresh()
     } catch (err) {
       console.error(err)
