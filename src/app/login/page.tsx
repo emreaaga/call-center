@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { LoginForm } from '@/components/admin-panel/login-form';
@@ -13,19 +15,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
     fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {
-        if (!mounted) return;
-        if (res.ok) {
-          router.replace(redirectTo);
-        }
+        if (res.ok) router.replace(redirectTo);
       })
-      .catch(() => {
-      });
-    return () => {
-      mounted = false;
-    };
+      .catch(() => {});
   }, [redirectTo, router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -53,6 +47,7 @@ export default function LoginPage() {
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Ошибка авторизации');
+
       router.replace(redirectTo);
     } catch (err: any) {
       setError(err.message);
@@ -63,21 +58,9 @@ export default function LoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="bg-muted relative hidden lg:block rounded-3xl">
-        <img
-          src="/left.svg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
-      </div>
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex flex-1 items-center justify-center">
-          <div className="flex flex-col">
-            {error && <div className="mb-2 text-red-600 font-medium">{error}</div>}
-            <LoginForm onSubmit={handleSubmit} loading={loading} />
-          </div>
-        </div>
-      </div>
+      {/* ... ваш JSX ... */}
+      <LoginForm onSubmit={handleSubmit} loading={loading} />
+      {/* ... */}
     </div>
   );
 }
