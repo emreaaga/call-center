@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('token')?.value
   if (!token) {
@@ -12,12 +15,19 @@ export async function GET(req: NextRequest) {
     {
       method: 'GET',
       headers: {
-        Accept: 'application/json',
+        Accept:        'application/json',
         Authorization: `Bearer ${token}`,
       },
+      cache: 'no-store',
     }
   )
 
   const data = await externalRes.json()
-  return NextResponse.json(data, { status: externalRes.status })
+
+  return NextResponse.json(data, {
+    status: externalRes.status,
+    headers: {
+      'Cache-Control': 'no-store, max-age=0',
+    },
+  })
 }

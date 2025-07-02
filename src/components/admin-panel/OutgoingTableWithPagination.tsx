@@ -38,6 +38,7 @@ const CallsPageSchema = z.object({
   per_page: z.number(),
 })
 
+// 2) Колонки таблицы
 const columns: ColumnDef<CallRecord>[] = [
   { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'client_name', header: 'Клиент' },
@@ -81,7 +82,7 @@ const columns: ColumnDef<CallRecord>[] = [
   },
 ]
 
-// 3) fetcher с валидацией Zod
+// 3) fetcher с валидацией через Zod
 const fetcher = async (url: string) => {
   const res = await fetch(url, {
     credentials: 'include',
@@ -90,9 +91,7 @@ const fetcher = async (url: string) => {
   })
   if (!res.ok) throw new Error(`Ошибка ${res.status}`)
   const json = await res.json()
-  // выбросит, если не соответствует схеме
-  const parsed = CallsPageSchema.parse(json)
-  return parsed
+  return CallsPageSchema.parse(json)
 }
 
 export function OutgoingTableWithPagination() {
@@ -101,14 +100,18 @@ export function OutgoingTableWithPagination() {
 
   const endpoint = `/api/calls/outgoing?page=${page}&per_page=${perPage}`
 
-  const { data, error, isLoading, isValidating } = useSWR(
+  const { data, error, isLoading } = useSWR(
     endpoint,
     fetcher,
-    { revalidateOnFocus: true }
+    {
+      revalidateOnFocus: true,
+      revalidateOnMount: true,
+      dedupingInterval: 0,
+    }
   )
 
-  // считаем, что загрузка идёт и при initial load, и при последующих refetch
-  const loading = isLoading || isValidating
+  // initial load для skeleton
+  const loadingInitial = isLoading
   const calls = data?.calls ?? []
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / perPage))
@@ -121,7 +124,7 @@ export function OutgoingTableWithPagination() {
           columns={columns}
           schema={CallRecordSchema}
           getRowId={row => row.id.toString()}
-          loading={loading}
+          loading={loadingInitial}
         />
       </div>
 
@@ -134,36 +137,16 @@ export function OutgoingTableWithPagination() {
       {/* пагинация */}
       <div className="flex items-center justify-between pt-4 border-t">
         <div className="flex gap-2">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-          >
+          <Button size="icon" variant="outline" onClick={() => setPage(1)} disabled={page === 1}>
             <ChevronsLeftIcon />
           </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setPage(p => Math.max(p - 1, 1))}
-            disabled={page === 1}
-          >
+          <Button size="icon" variant="outline" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>
             <ChevronLeftIcon />
           </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-          >
+          <Button size="icon" variant="outline" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>
             <ChevronRightIcon />
           </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setPage(totalPages)}
-            disabled={page === totalPages}
-          >
+          <Button size="icon" variant="outline" onClick={() => setPage(totalPages)} disabled={page === totalPages}>
             <ChevronsRightIcon />
           </Button>
         </div>
@@ -172,13 +155,7 @@ export function OutgoingTableWithPagination() {
         </div>
         <div className="flex items-center gap-2">
           <span>На странице:</span>
-          <Select
-            value={String(perPage)}
-            onValueChange={v => {
-              setPerPage(Number(v))
-              setPage(1)
-            }}
-          >
+          <Select value={String(perPage)} onValueChange={v => { setPerPage(Number(v)); setPage(1) }}>
             <SelectTrigger className="w-20">
               <SelectValue placeholder={String(perPage)} />
             </SelectTrigger>

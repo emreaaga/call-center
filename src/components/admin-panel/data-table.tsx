@@ -267,7 +267,7 @@ export function DataTable<TData, TSchema extends z.ZodObject<any>>({
                         colSpan={visibleColumns.length}
                         className="h-24 text-center"
                       >
-                        No results.
+                        Нету данных для таблицы.
                       </TableCell>
                     </TableRow>
                   )}
