@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useSWRConfig } from 'swr'
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -17,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button";
 import * as React from 'react';
 
@@ -30,6 +32,7 @@ export default function SettingsCard() {
   });
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const { mutate } = useSWRConfig()
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [field]: e.target.value }));
@@ -53,11 +56,12 @@ export default function SettingsCard() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || `Ошибка ${res.status}`);
-      // можно очистить форму или показать успех
       setForm({ name: '', endpoint: '', username: '', password: '', channel_count: '1' });
-      alert('SIP создан!');
+      await mutate('/api/dashboard/get-sip')
+      toast.success("SIP был успешно создан!")
     } catch (err: any) {
       setError(err.message);
+      toast.error('Произошла ошибка!')
     } finally {
       setLoading(false);
     }
