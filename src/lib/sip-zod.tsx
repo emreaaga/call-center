@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import * as React from "react";
 import { DataTable } from "@/components/admin-panel/data-table";
@@ -35,6 +35,7 @@ const SipResponseSchema = z.object({
   total: z.number(),
 });
 
+// 3) Форматтер даты
 function formatCustomDate(raw: string | null) {
   if (!raw) return "—";
   const [d, t] = raw.split(" ");
@@ -53,36 +54,37 @@ const columns: ColumnDef<SipEntry>[] = [
   { accessorKey: "username", header: "Логин" },
   { accessorKey: "channel_count", header: "Каналы" },
   {
-  accessorKey: "status_ru",
-  header: "Статус",
-  cell: ({ getValue }) => {
-    const status = getValue() as string;
-    const isActive = status === "Активно";
-    return (
-      <span
-        className={`inline-block px-2 py-1 text-sm rounded-lg ${
-          isActive ? "bg-[#E2FBE8] text-green-700" : "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {status}
-      </span>
-    );
+    accessorKey: "status_ru",
+    header: "Статус",
+    cell: ({ getValue }) => {
+      const status = getValue<string>();
+      const isActive = status === "Активно";
+      return (
+        <span
+          className={`inline-block px-2 py-1 text-sm rounded-lg ${
+            isActive ? "bg-[#E2FBE8] text-green-700" : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {status}
+        </span>
+      );
+    },
   },
-},
   {
     accessorKey: "created_at",
     header: "Создано",
-    cell: ({ getValue }) => formatCustomDate(getValue() as string),
+    cell: ({ getValue }) => formatCustomDate(getValue<string>()),
   },
   {
     accessorKey: "updated_at",
     header: "Обновлено",
-    cell: ({ getValue }) => formatCustomDate(getValue() as string),
+    cell: ({ getValue }) => formatCustomDate(getValue<string>()),
   },
 ];
 
 export type SipActionRenderer = (row: SipEntry) => JSX.Element;
 
+// 5) Компонент таблицы с skeleton
 export default function SipTable({
   renderActionButton,
 }: {
@@ -116,20 +118,21 @@ export default function SipTable({
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Загрузка SIP-коннектов…</div>;
-  if (error) return <div className="text-red-600">Ошибка: {error}</div>;
-
   return (
     <div className="mt-6">
-      <DataTable
+      <DataTable<SipEntry, typeof SipEntrySchema>
         data={data}
         columns={columns}
         schema={SipEntrySchema}
-        getRowId={(row) => row.uuid.toString()}
-        {...(renderActionButton
-          ? { renderActionButton }
-          : {})}
+        getRowId={(row) => row.uuid}
+        loading={loading}
+        {...(renderActionButton ? { renderActionButton } : {})}
       />
+      {error && (
+        <div className="text-red-600 text-sm mt-2">
+          Ошибка загрузки: {error}
+        </div>
+      )}
     </div>
   );
 }

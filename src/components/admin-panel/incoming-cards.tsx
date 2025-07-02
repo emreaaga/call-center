@@ -1,5 +1,6 @@
 'use client'
 
+import { Skeleton } from "@/components/ui/skeleton"
 import * as React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import TodayIcon from '@/icons/incomingCalls/totalСalls.svg'
@@ -22,12 +23,12 @@ const infoCards: Array<{
   Icon: React.FC<React.SVGProps<SVGSVGElement>>
   percent: number
 }> = [
-    { label: 'total_calls_today', title: 'Всего звонков сегодня', Icon: TodayIcon, percent: 0 },
-    { label: 'answered_calls', title: 'Отвеченные звонки', Icon: AnsweredIcon, percent: 0 },
-    { label: 'missed_calls', title: 'Пропущенные звонки', Icon: MissedIcon, percent: 0 },
-    { label: 'average_duration', title: 'Средняя длительность', Icon: AvrIcon, percent: 0 },
-    { label: 'transferred_calls', title: 'Переведено на оператора', Icon: TransferIcon, percent: 0 },
-  ]
+  { label: 'total_calls_today', title: 'Всего звонков сегодня', Icon: TodayIcon, percent: 0 },
+  { label: 'answered_calls', title: 'Отвеченные звонки', Icon: AnsweredIcon, percent: 0 },
+  { label: 'missed_calls', title: 'Пропущенные звонки', Icon: MissedIcon, percent: 0 },
+  { label: 'average_duration', title: 'Средняя длительность', Icon: AvrIcon, percent: 0 },
+  { label: 'transferred_calls', title: 'Переведено на оператора', Icon: TransferIcon, percent: 0 },
+]
 
 export function IncomingCards() {
   const [stats, setStats] = React.useState<Stats | null>(null)
@@ -45,8 +46,7 @@ export function IncomingCards() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div>Загрузка статистики…</div>
-  if (error || !stats) return <div className="text-red-600">Ошибка: {error || 'нет данных'}</div>
+  if (error) return <div className="text-red-600">Ошибка: {error}</div>
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
@@ -57,7 +57,6 @@ export function IncomingCards() {
               className="flex items-center justify-center rounded-lg"
               style={{ backgroundColor: '#E4F2FD', width: 32, height: 32 }}
             >
-              {/* Подросли до h-6 w-6 */}
               <Icon className="h-6 w-6" />
             </div>
             <CardTitle className="text-xs text-left flex-1 p-0 leading-tight">
@@ -65,14 +64,23 @@ export function IncomingCards() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex items-baseline gap-1 p-0">
-            <div className="text-xl font-bold text-left">
-              {label === 'average_duration'
-                ? stats[label] || '—'
-                : stats[label].toLocaleString()}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              +{percent}%
-            </div>
+            {loading ? (
+              <>
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-4 w-8" />
+              </>
+            ) : (
+              <>
+                <div className="text-xl font-bold text-left">
+                  {label === 'average_duration'
+                    ? stats![label] || '—'
+                    : (stats![label] as number).toLocaleString()}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  +{percent}%
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       ))}
