@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import useSWR from 'swr'
 import { DataTable } from '@/components/admin-panel/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { z } from 'zod'
 
+// 1) Zod-схемы и типы
 const CallRecordSchema = z.object({
   id: z.number(),
   phone: z.string(),
@@ -36,106 +38,6 @@ const CallsPageSchema = z.object({
   per_page: z.number(),
 })
 
-export function OutgoingTableWithPagination() {
-  const [data, setData] = React.useState<CallRecord[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
-
-  const [page, setPage] = React.useState(1)
-  const [perPage, setPerPage] = React.useState(10)
-  const [total, setTotal] = React.useState(0)
-
-  const totalPages = Math.max(1, Math.ceil(total / perPage))
-
-  React.useEffect(() => {
-    setLoading(true)
-    fetch(`/api/calls/outgoing?page=${page}&per_page=${perPage}`, {
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(`Ошибка ${res.status}`)
-        return res.json()
-      })
-      .then(json => {
-        const p = CallsPageSchema.safeParse(json)
-        if (!p.success) {
-          console.error(p.error)
-          throw new Error('Неправильный формат ответа API')
-        }
-        setData(p.data.calls)
-        setTotal(p.data.total)
-      })
-      .catch(err => {
-        console.error(err)
-        setError(err.message)
-      })
-      .finally(() => setLoading(false))
-  }, [page, perPage])
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Выводим таблицу всегда, она сама покажет skeleton, если loading=true */}
-      <div className="w-full">
-        <DataTable<CallRecord, typeof CallRecordSchema>
-          data={data}
-          columns={columns}
-          schema={CallRecordSchema}
-          getRowId={row => row.id.toString()}
-          loading={loading}
-        />
-      </div>
-
-      {/* Если произошла ошибка — показываем её под таблицей */}
-      {error && (
-        <div className="text-red-600 text-sm">
-          Ошибка загрузки: {error}
-        </div>
-      )}
-
-      {/* пагинация */}
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex gap-2">
-          <Button size="icon" variant="outline" onClick={() => setPage(1)} disabled={page === 1}>
-            <ChevronsLeftIcon />
-          </Button>
-          <Button size="icon" variant="outline" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>
-            <ChevronLeftIcon />
-          </Button>
-          <Button size="icon" variant="outline" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>
-            <ChevronRightIcon />
-          </Button>
-          <Button size="icon" variant="outline" onClick={() => setPage(totalPages)} disabled={page === totalPages}>
-            <ChevronsRightIcon />
-          </Button>
-        </div>
-        <div className="text-sm font-medium">
-          Страница {page} из {totalPages}
-        </div>
-        <div className="flex items-center gap-2">
-          <span>На странице:</span>
-          <Select
-            value={String(perPage)}
-            onValueChange={v => { setPerPage(Number(v)); setPage(1) }}
-          >
-            <SelectTrigger className="w-20">
-              <SelectValue placeholder={String(perPage)} />
-            </SelectTrigger>
-            <SelectContent side="top">
-              {[5, 10, 20, 50].map(s => (
-                <SelectItem key={s} value={String(s)}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// колонки остаются без изменений
 const columns: ColumnDef<CallRecord>[] = [
   { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'client_name', header: 'Клиент' },
@@ -178,3 +80,118 @@ const columns: ColumnDef<CallRecord>[] = [
     },
   },
 ]
+
+// 3) fetcher с валидацией Zod
+const fetcher = async (url: string) => {
+  const res = await fetch(url, {
+    credentials: 'include',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  })
+  if (!res.ok) throw new Error(`Ошибка ${res.status}`)
+  const json = await res.json()
+  // выбросит, если не соответствует схеме
+  const parsed = CallsPageSchema.parse(json)
+  return parsed
+}
+
+export function OutgoingTableWithPagination() {
+  const [page, setPage] = React.useState(1)
+  const [perPage, setPerPage] = React.useState(10)
+
+  const endpoint = `/api/calls/outgoing?page=${page}&per_page=${perPage}`
+
+  const { data, error, isLoading, isValidating } = useSWR(
+    endpoint,
+    fetcher,
+    { revalidateOnFocus: true }
+  )
+
+  // считаем, что загрузка идёт и при initial load, и при последующих refetch
+  const loading = isLoading || isValidating
+  const calls = data?.calls ?? []
+  const total = data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / perPage))
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="w-full">
+        <DataTable<CallRecord, typeof CallRecordSchema>
+          data={calls}
+          columns={columns}
+          schema={CallRecordSchema}
+          getRowId={row => row.id.toString()}
+          loading={loading}
+        />
+      </div>
+
+      {error && (
+        <div className="text-red-600 text-sm">
+          Ошибка загрузки: {error.message}
+        </div>
+      )}
+
+      {/* пагинация */}
+      <div className="flex items-center justify-between pt-4 border-t">
+        <div className="flex gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+          >
+            <ChevronsLeftIcon />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
+            disabled={page === 1}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+            disabled={page === totalPages}
+          >
+            <ChevronRightIcon />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(totalPages)}
+            disabled={page === totalPages}
+          >
+            <ChevronsRightIcon />
+          </Button>
+        </div>
+        <div className="text-sm font-medium">
+          Страница {page} из {totalPages}
+        </div>
+        <div className="flex items-center gap-2">
+          <span>На странице:</span>
+          <Select
+            value={String(perPage)}
+            onValueChange={v => {
+              setPerPage(Number(v))
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="w-20">
+              <SelectValue placeholder={String(perPage)} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[5, 10, 20, 50].map(s => (
+                <SelectItem key={s} value={String(s)}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  )
+}

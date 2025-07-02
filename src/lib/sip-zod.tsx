@@ -1,12 +1,14 @@
+// lib/sip-zod.tsx
 'use client';
 
-import * as React from "react";
-import { DataTable } from "@/components/admin-panel/data-table";
-import type { ColumnDef } from "@tanstack/react-table";
-import { z } from "zod";
+import * as React from 'react';
+import useSWR from 'swr';
+import { DataTable } from '@/components/admin-panel/data-table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { z } from 'zod';
 
 // 1) Описание записи
-interface SipEntry {
+export interface SipEntry {
   id: number;
   uuid: string;
   name: string;
@@ -19,7 +21,7 @@ interface SipEntry {
 }
 
 // 2) Схемы Zod
-const SipEntrySchema = z.object({
+export const SipEntrySchema = z.object({
   id: z.number(),
   uuid: z.string(),
   name: z.string(),
@@ -37,32 +39,32 @@ const SipResponseSchema = z.object({
 
 // 3) Форматтер даты
 function formatCustomDate(raw: string | null) {
-  if (!raw) return "—";
-  const [d, t] = raw.split(" ");
-  if (!d || !t) return "—";
-  const [dd, mm, yyyy] = d.split(".").map(Number);
-  const [hh, mi] = t.split(":").map(Number);
+  if (!raw) return '—';
+  const [d, t] = raw.split(' ');
+  if (!d || !t) return '—';
+  const [dd, mm, yyyy] = d.split('.').map(Number);
+  const [hh, mi] = t.split(':').map(Number);
   const date = new Date(yyyy, mm - 1, dd, hh, mi);
-  return isNaN(date.getTime()) ? "—" : date.toLocaleString();
+  return isNaN(date.getTime()) ? '—' : date.toLocaleString();
 }
 
 // 4) Колонки таблицы
 const columns: ColumnDef<SipEntry>[] = [
-  { accessorKey: "id", header: "ID" },
-  { accessorKey: "name", header: "Имя" },
-  { accessorKey: "endpoint", header: "Endpoint" },
-  { accessorKey: "username", header: "Логин" },
-  { accessorKey: "channel_count", header: "Каналы" },
+  { accessorKey: 'id', header: 'ID' },
+  { accessorKey: 'name', header: 'Имя' },
+  { accessorKey: 'endpoint', header: 'Endpoint' },
+  { accessorKey: 'username', header: 'Логин' },
+  { accessorKey: 'channel_count', header: 'Каналы' },
   {
-    accessorKey: "status_ru",
-    header: "Статус",
+    accessorKey: 'status_ru',
+    header: 'Статус',
     cell: ({ getValue }) => {
       const status = getValue<string>();
-      const isActive = status === "Активно";
+      const isActive = status === 'Активно';
       return (
         <span
           className={`inline-block px-2 py-1 text-sm rounded-lg ${
-            isActive ? "bg-[#E2FBE8] text-green-700" : "bg-gray-100 text-gray-800"
+            isActive ? 'bg-[#E2FBE8] text-green-700' : 'bg-gray-100 text-gray-800'
           }`}
         >
           {status}
@@ -71,66 +73,65 @@ const columns: ColumnDef<SipEntry>[] = [
     },
   },
   {
-    accessorKey: "created_at",
-    header: "Создано",
+    accessorKey: 'created_at',
+    header: 'Создано',
     cell: ({ getValue }) => formatCustomDate(getValue<string>()),
   },
   {
-    accessorKey: "updated_at",
-    header: "Обновлено",
+    accessorKey: 'updated_at',
+    header: 'Обновлено',
     cell: ({ getValue }) => formatCustomDate(getValue<string>()),
   },
 ];
 
+// 5) Fetcher с Zod-валидацией и отключкой HTTP-кеша
+const fetcher = async (url: string) => {
+  const res = await fetch(url, {
+    credentials: 'include',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+  const json = await res.json();
+  return SipResponseSchema.parse(json);
+};
+
 export type SipActionRenderer = (row: SipEntry) => JSX.Element;
 
-// 5) Компонент таблицы с skeleton
+// 6) Компонент с SWR и skeleton
 export default function SipTable({
   renderActionButton,
 }: {
   renderActionButton?: SipActionRenderer;
 }) {
-  const [data, setData] = React.useState<SipEntry[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
+    '/api/dashboard/get-sip',
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnMount: true,
+      dedupingInterval: 0,
+    }
+  );
 
-  React.useEffect(() => {
-    fetch("/api/dashboard/get-sip", {
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Ошибка ${res.status}`);
-        return res.json();
-      })
-      .then((json) => {
-        const parsed = SipResponseSchema.safeParse(json);
-        if (!parsed.success) {
-          console.error(parsed.error);
-          throw new Error("Неправильный формат ответа API");
-        }
-        setData(parsed.data.sips);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  // initial загрузка показывает skeleton, фоновые обновления просто обновляют data
+  const loadingInitial = isLoading;
+  const sips = data?.sips ?? [];
 
   return (
     <div className="mt-6">
       <DataTable<SipEntry, typeof SipEntrySchema>
-        data={data}
+        data={sips}
         columns={columns}
         schema={SipEntrySchema}
-        getRowId={(row) => row.uuid}
-        loading={loading}
+        getRowId={row => row.uuid}
+        loading={loadingInitial}
         {...(renderActionButton ? { renderActionButton } : {})}
       />
+
       {error && (
         <div className="text-red-600 text-sm mt-2">
-          Ошибка загрузки: {error}
+          Ошибка загрузки: {error.message}
         </div>
       )}
     </div>
