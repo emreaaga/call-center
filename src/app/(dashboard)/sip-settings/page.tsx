@@ -1,5 +1,8 @@
-'use client'
+'use client';
+
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { useSWRConfig } from 'swr';
 import { ContentLayout } from '@/components/admin-panel/content-layout';
 import SettingsCard from '@/components/admin-panel/settings-card';
 import SipTable, { SipActionRenderer } from '@/lib/sip-zod';
@@ -15,21 +18,29 @@ import { ConfirmDialog } from '@/components/admin-panel/confirm-dialog';
 
 export default function SipSettingsPage() {
   const router = useRouter();
+  const { mutate } = useSWRConfig();  // <-- импортируем и получаем mutate
 
   const handleDelete = async (uuid: string) => {
     try {
-      const res = await fetch(`/api/sip/${uuid}`, {
-        method: 'DELETE',
+      const res = await fetch('/api/sip/delete', {
+        method: 'POST',
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uuid }),
       });
       if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+
+      // инвалидируем SWR-кэш для списка SIP
+      await mutate('/api/dashboard/get-sip');
+
+      // Обновляем текущую страницу (необязательно, если только список поднимается)
       router.refresh();
     } catch (err) {
       console.error(err);
     }
   };
 
-  const renderActions: SipActionRenderer = row => (
+  const renderActions: SipActionRenderer = (row) => (
     <div className="flex space-x-3">
       <Tooltip>
         <TooltipTrigger asChild>
@@ -56,7 +67,7 @@ export default function SipSettingsPage() {
         <TooltipContent>Удалить</TooltipContent>
       </Tooltip>
     </div>
-  )
+  );
 
   return (
     <TooltipProvider>
@@ -65,5 +76,5 @@ export default function SipSettingsPage() {
         <SipTable renderActionButton={renderActions} />
       </ContentLayout>
     </TooltipProvider>
-  )
+  );
 }
