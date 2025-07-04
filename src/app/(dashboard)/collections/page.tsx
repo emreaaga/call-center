@@ -2,12 +2,12 @@
 
 import { ContentLayout } from '@/components/admin-panel/content-layout';
 import React from 'react';
-import SipTable from '@/lib/sip-zod';
+import CampaignTable from '@/lib/campaigns-zod';
 
 export default function SipPage() {
   return (
     <ContentLayout title="Список коллекций">
-      <SipTable />
+      <CampaignTable />
     </ContentLayout>
   );
 }

@@ -1,4 +1,3 @@
-// lib/sip-zod.tsx
 'use client';
 
 import * as React from 'react';
@@ -7,7 +6,6 @@ import { DataTable } from '@/components/admin-panel/data-table';
 import type { ColumnDef } from '@tanstack/react-table';
 import { z } from 'zod';
 
-// 1) Описание записи
 export interface SipEntry {
   id: number;
   uuid: string;
@@ -20,7 +18,6 @@ export interface SipEntry {
   updated_at: string;
 }
 
-// 2) Схемы Zod
 export const SipEntrySchema = z.object({
   id: z.number(),
   uuid: z.string(),
@@ -84,7 +81,6 @@ const columns: ColumnDef<SipEntry>[] = [
   },
 ];
 
-// 5) Fetcher с Zod-валидацией и отключкой HTTP-кеша
 const fetcher = async (url: string) => {
   const res = await fetch(url, {
     credentials: 'include',
@@ -98,7 +94,6 @@ const fetcher = async (url: string) => {
 
 export type SipActionRenderer = (row: SipEntry) => JSX.Element;
 
-// 6) Компонент с SWR и skeleton
 export default function SipTable({
   renderActionButton,
 }: {
@@ -114,7 +109,6 @@ export default function SipTable({
     }
   );
 
-  // initial загрузка показывает skeleton, фоновые обновления просто обновляют data
   const loadingInitial = isLoading;
   const sips = data?.sips ?? [];
 

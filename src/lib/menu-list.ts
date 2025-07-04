@@ -1,6 +1,7 @@
 import settings from "@/icons/navbar/settings.svg";
-import main from "@/icons/navbar/main.svg";
-import file from "@/icons/navbar/file.svg";
+import incoming from "@/icons/navbar/incoming-calls.svg"
+import outcoming from "@/icons/navbar/outcoming-calls.svg"
+import list from "@/icons/navbar/list.svg"
 
 type Submenu = {
   href: string;
@@ -28,17 +29,17 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/",
           label: "Исходящие звонки",
-          icon: main,
+          icon: outcoming,
         },
         {
           href: "/incoming",
           label: "Входящие звонки",
-          icon: file,
+          icon: incoming,
         },
         {
           href: "/collections",
           label: "Список коллекций",
-          icon: file,
+          icon: list,
         },
         {
           href: "/sip-settings",
