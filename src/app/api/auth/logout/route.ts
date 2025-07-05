@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   // если нужно — оповестить внешний API о логауте
   const token = request.cookies.get('token')?.value
   if (token) {
-    await fetch('https://app.robotcall.uz/api/auth/logout', {
+    await fetch('https://backend.icall.uz/api/auth/logout', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     })

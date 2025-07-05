@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const BASE = 'https://app.robotcall.uz/api/sip'
+const BASE = 'https://backend.icall.uz/api/sip'
 
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'

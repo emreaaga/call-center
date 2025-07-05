@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
   }
-  const externalRes = await fetch('https://app.robotcall.uz/api/dashboard/charts', {
+  const externalRes = await fetch('https://backend.icall.uz/api/dashboard/charts', {
     method: 'GET',
     headers: {
       Accept: 'application/json',

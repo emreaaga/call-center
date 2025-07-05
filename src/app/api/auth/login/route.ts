@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   try {
     const { phone, password } = await request.json()
-    const externalRes = await fetch('https://app.robotcall.uz/api/auth/login', {
+    const externalRes = await fetch('https://backend.icall.uz/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, password }),

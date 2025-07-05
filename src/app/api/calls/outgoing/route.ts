@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const per_page = searchParams.get('per_page') ?? '10'
 
   const externalRes = await fetch(
-    `https://app.robotcall.uz/api/calls/outgoing?page=${page}&per_page=${per_page}`,
+    `https://backend.icall.uz/api/calls/outgoing?page=${page}&per_page=${per_page}`,
     {
       method: 'GET',
       headers: {

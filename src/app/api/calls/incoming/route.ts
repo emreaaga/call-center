@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   const externalRes = await fetch(
-    'https://app.robotcall.uz/api/calls/incoming?page=1&per_page=10',
+    'https://backend.icall.uz/api/calls/incoming?page=1&per_page=10',
     {
       method: 'GET',
       headers: {

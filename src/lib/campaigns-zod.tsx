@@ -17,8 +17,8 @@ export const CampaignEntrySchema = z.object({
   channel_count: z.number(),
   status_ru:     z.string(),
   sip_name:      z.string(),
-  start_date:    z.string(),
-  end_date:      z.string(),
+  start_date:    z.string().nullable(),
+  end_date:      z.string().nullable(),
 });
 export type CampaignEntry = z.infer<typeof CampaignEntrySchema>;
 

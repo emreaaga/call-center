@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   const externalRes = await fetch(
-    'https://app.robotcall.uz/api/dashboard/stats',
+    'https://backend.icall.uz/api/dashboard/stats',
     {
       method: 'GET',
       headers: {

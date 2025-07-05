@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
   }
 
-  const res = await fetch('https://app.robotcall.uz/api/sip', {
+  const res = await fetch('https://backend.icall.uz/api/sip', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
