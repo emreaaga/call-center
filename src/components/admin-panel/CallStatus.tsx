@@ -73,7 +73,7 @@ export function ChartPieDonutActive() {
     );
   }
 
-  // 3. В остальном — как было
+  // 3. Подготавливаем данные для Pie
   const COLORS = [
     'var(--chart-1)',
     'var(--chart-2)',
@@ -86,12 +86,16 @@ export function ChartPieDonutActive() {
     visitors: s.count,
     fill:     COLORS[i % COLORS.length],
   }));
+
+  // 4. Вычисляем активный индекс (максимальный visitors)
   const activeIndex = chartData.reduce(
     (maxIdx, item, idx, arr) =>
       item.visitors > arr[maxIdx].visitors ? idx : maxIdx,
     0
   );
-  const chartConfig = {
+
+  // 5. Полный config для ChartContainer: visitors + категории
+  const chartConfig: ChartConfig = {
     visitors: { label: 'Количество звонков', color: COLORS[0] },
     ...Object.fromEntries(
       slices.map((s, i) => [
@@ -99,7 +103,7 @@ export function ChartPieDonutActive() {
         { label: s.label_ru, color: COLORS[i % COLORS.length] },
       ])
     ),
-  } satisfies ChartConfig;
+  };
 
   return (
     <Card className="h-96 flex flex-col">
@@ -112,40 +116,42 @@ export function ChartPieDonutActive() {
           config={chartConfig}
           className="mx-auto aspect-square max-h-[250px]"
         >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={({ payload }) => {
-                if (!payload?.length) return null;
-                const { browser, visitors } = payload[0].payload;
-                return (
-                  <div className="bg-white p-2 rounded shadow">
-                    <div className="font-medium">{browser}</div>
-                    <div>Звонков: {visitors}</div>
-                  </div>
-                );
-              }}
-            />
-            <Pie
-              data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
-              innerRadius={60}
-              strokeWidth={5}
-              activeIndex={activeIndex}
-              activeShape={({
-                outerRadius = 0,
-                ...props
-              }: PieSectorDataItem) => (
-                <Sector {...props} outerRadius={outerRadius + 10} />
-              )}
-            >
-              {chartData.map((entry, idx) => (
-                <Cell key={idx} fill={entry.fill} />
-              ))}
-            </Pie>
-          </PieChart>
-          <ChartLegend content={<ChartLegendContent />} />
+          <>
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={({ payload }) => {
+                  if (!payload?.length) return null;
+                  const { browser, visitors } = payload[0].payload;
+                  return (
+                    <div className="bg-white p-2 rounded shadow">
+                      <div className="font-medium">{browser}</div>
+                      <div>Звонков: {visitors}</div>
+                    </div>
+                  );
+                }}
+              />
+              <Pie
+                data={chartData}
+                dataKey="visitors"
+                nameKey="browser"
+                innerRadius={60}
+                strokeWidth={5}
+                activeIndex={activeIndex}
+                activeShape={({
+                  outerRadius = 0,
+                  ...props
+                }: PieSectorDataItem) => (
+                  <Sector {...props} outerRadius={outerRadius + 10} />
+                )}
+              >
+                {chartData.map((entry, idx) => (
+                  <Cell key={idx} fill={entry.fill} />
+                ))}
+              </Pie>
+            </PieChart>
+            <ChartLegend content={<ChartLegendContent />} />
+          </>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
