@@ -7,6 +7,7 @@ import { AreaChart, Area, CartesianGrid, XAxis } from 'recharts'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -57,9 +58,9 @@ export function ChartAreaInteractive() {
     <Card className="pt-0">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="flex-1">
-          <CardTitle>Area Chart - Interactive</CardTitle>
+          <CardTitle>Статистика по звонкам</CardTitle>
+          <CardDescription>За последние 7 дней</CardDescription>
         </div>
-        {/* если нужен Select — можно вернуть */}
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
