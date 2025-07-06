@@ -18,25 +18,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
-
 import { fetchCharts, WeeklyDuration } from '@/lib/fetch-charts'
 
-// keep your same gradients & colors
 const chartConfig = {
   call_count: { label: 'Кол-во звонков', color: 'var(--chart-1)' },
-  duration: { label: 'Длительность', color: 'var(--chart-2)' },
+  duration:   { label: 'Длительность',    color: 'var(--chart-2)' },
 } satisfies ChartConfig
 
 export function ChartAreaInteractive() {
   const { data, error, isLoading } = useSWR('/api/dashboard/charts', fetchCharts)
-  const [timeRange, setTimeRange] = React.useState<'7d' | '30d' | '90d'>('7d')
 
   if (isLoading) {
     return (
@@ -52,17 +42,15 @@ export function ChartAreaInteractive() {
       </Card>
     )
   }
+  if (!data) {
+    return null
+  }
 
-  // 1) pull your 7-day array
   let chartData: WeeklyDuration[] = data.weekly_duration
 
-  // 2) (optional) filter to last N days if you still want timeRange logic:
-  //    e.g. chartData = chartData.slice(-parseInt(timeRange, 10))
-
-  // 3) sort into Sun→Mon→...→Sat
-  const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const dayOrder = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
   chartData = [...chartData].sort(
-    (a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
+    (a,b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
   )
 
   return (
@@ -71,25 +59,23 @@ export function ChartAreaInteractive() {
         <div className="flex-1">
           <CardTitle>Area Chart - Interactive</CardTitle>
         </div>
+        {/* если нужен Select — можно вернуть */}
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
+        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
           <AreaChart
             data={chartData}
-            margin={{ top: 0, right: 12, bottom: 0, left: 20 }}  // ← add left margin
+            margin={{ top: 0, right: 12, bottom: 0, left: 20 }}
           >
             <defs>
               <linearGradient id="fillCallCount" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
+                <stop offset="5%"  stopColor="var(--chart-1)" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1}/>
               </linearGradient>
               <linearGradient id="fillDuration" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.1} />
+                <stop offset="5%"  stopColor="var(--chart-2)" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
 
@@ -102,10 +88,7 @@ export function ChartAreaInteractive() {
               minTickGap={32}
               interval={0}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <Area
               dataKey="call_count"
               type="natural"
