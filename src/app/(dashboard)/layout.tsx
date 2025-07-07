@@ -8,5 +8,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <AdminPanelLayout>{children} <Toaster position="bottom-center" /></AdminPanelLayout>
+  return <AdminPanelLayout>{children} <Toaster closeButton richColors position="bottom-center" /></AdminPanelLayout>
 }

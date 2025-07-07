@@ -60,8 +60,9 @@ export default function SettingsCard() {
       await mutate('/api/dashboard/get-sip')
       toast.success("SIP был успешно создан!")
     } catch (err: any) {
-      setError(err.message);
-      toast.error('Произошла ошибка!')
+      toast.error('Произошла ошибка!', {
+        description: err.message
+      })
     } finally {
       setLoading(false);
     }
@@ -99,6 +100,7 @@ export default function SettingsCard() {
             <Label htmlFor="sip-username">Логин</Label>
             <Input
               id="sip-username"
+              autoComplete="off"
               value={form.username}
               onChange={handleChange('username')}
               className="w-80 rounded-2xl"
@@ -130,6 +132,7 @@ export default function SettingsCard() {
             <Label htmlFor="sip-password">Пароль</Label>
             <Input
               id="sip-password"
+              autoComplete="new-password"
               type="password"
               value={form.password}
               onChange={handleChange('password')}
