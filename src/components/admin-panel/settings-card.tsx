@@ -54,19 +54,35 @@ export default function SettingsCard() {
           channel_count: Number(form.channel_count),
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || `Ошибка ${res.status}`);
+
+      // если статус не ок — пробуем вытащить сообщение из JSON, но безопасно
+      if (!res.ok) {
+        let errMsg = `Ошибка ${res.status}`;
+        try {
+          const errJson = await res.json();
+          errMsg = errJson.message || errMsg;
+        } catch {
+          // пустой или некорректный JSON
+        }
+        throw new Error(errMsg);
+      }
+
+      // безопасно парсим JSON только если есть тело
+      const text = await res.text();
+      const json = text ? JSON.parse(text) : {};
+
       setForm({ name: '', endpoint: '', username: '', password: '', channel_count: '1' });
-      await mutate('/api/dashboard/get-sip')
-      toast.success("SIP был успешно создан!")
+      await mutate('/api/dashboard/get-sip');
+      toast.success("SIP был успешно создан!");
     } catch (err: any) {
       toast.error('Произошла ошибка!', {
         description: err.message
-      })
+      });
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <Card className="rounded-xl border-none">
