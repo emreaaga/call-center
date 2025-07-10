@@ -34,7 +34,6 @@ const SipResponseSchema = z.object({
   total: z.number(),
 });
 
-// 3) Форматтер даты
 function formatCustomDate(raw: string | null) {
   if (!raw) return '—';
   const [d, t] = raw.split(' ');
@@ -45,7 +44,6 @@ function formatCustomDate(raw: string | null) {
   return isNaN(date.getTime()) ? '—' : date.toLocaleString();
 }
 
-// 4) Колонки таблицы
 const columns: ColumnDef<SipEntry>[] = [
   { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'name', header: 'Имя' },

@@ -15,13 +15,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface EditSipDialogProps {
   sipUuid: string;
   trigger: React.ReactElement;
 }
 
-// Опишем интерфейс формы:
 interface EditSipForm {
   name: string;
   endpoint: string;
@@ -29,7 +29,6 @@ interface EditSipForm {
   status_ru: string;
 }
 
-// fetcher для GET
 async function fetchSip([, uuid]: [string, string]) {
   const res = await fetch('/api/sip/get-sip', {
     method: 'POST',
@@ -47,29 +46,25 @@ export const EditSipDialog = React.forwardRef<HTMLElement, EditSipDialogProps>(
     const [open, setOpen] = React.useState(false);
     const { mutate } = useSWRConfig();
 
-    // подгружаем данные когда диалог открыт
     const { data, error, isLoading } = useSWR(
       open ? ['edit-sip', sipUuid] : null,
       fetchSip
     );
 
-    // локальный стейт формы (с правильным типом)
     const [form, setForm] = React.useState<EditSipForm | null>(null);
     const [saving, setSaving] = React.useState(false);
 
-    // когда data придут — заполняем form
     React.useEffect(() => {
       if (data) {
         setForm({
-          name:          data.name,
-          endpoint:      data.endpoint,
+          name: data.name,
+          endpoint: data.endpoint,
           channel_count: data.channel_count,
-          status_ru:     data.status_ru,
+          status_ru: data.status_ru,
         });
       }
     }, [data]);
 
-    // Упрощённый onChange
     const onChange = (field: keyof EditSipForm) => (
       e: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -81,26 +76,34 @@ export const EditSipDialog = React.forwardRef<HTMLElement, EditSipDialogProps>(
       setForm({ ...form, [field]: value });
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
       if (!form) return;
       setSaving(true);
-      try {
+
+      const savePromise = (async () => {
         const res = await fetch('/api/sip/update-sip', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uuid: sipUuid, ...form }),
         });
-        if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`Ошибка ${res.status}`);
+        }
         await mutate('/api/dashboard/get-sip');
         await mutate(['edit-sip', sipUuid]);
         setOpen(false);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setSaving(false);
-      }
+      })();
+
+      toast.promise(savePromise, {
+        loading: 'Сохраняем SIP…',
+        success: 'SIP был успешно сохранён!',
+        error: (err: Error) => `Ошибка: ${err.message}`,
+      });
+
+      savePromise.finally(() => setSaving(false));
     };
+
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -114,8 +117,8 @@ export const EditSipDialog = React.forwardRef<HTMLElement, EditSipDialogProps>(
               {isLoading
                 ? 'Загрузка…'
                 : error
-                ? `Ошибка: ${error.message}`
-                : 'Измените поля и нажмите «Сохранить»'}
+                  ? `Ошибка: ${error.message}`
+                  : 'Измените поля и нажмите «Сохранить»'}
             </DialogDescription>
           </DialogHeader>
 

@@ -38,50 +38,53 @@ export default function SettingsCard() {
     setForm(f => ({ ...f, [field]: e.target.value }));
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/sip', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          endpoint: form.endpoint,
-          username: form.username,
-          password: form.password,
-          channel_count: Number(form.channel_count),
-        }),
-      });
+  const handleSubmit = () => {
+    toast.promise(
+      (async () => {
+        const res = await fetch('/api/sip', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name,
+            endpoint: form.endpoint,
+            username: form.username,
+            password: form.password,
+            channel_count: Number(form.channel_count),
+          }),
+        })
 
-      // если статус не ок — пробуем вытащить сообщение из JSON, но безопасно
-      if (!res.ok) {
-        let errMsg = `Ошибка ${res.status}`;
-        try {
-          const errJson = await res.json();
-          errMsg = errJson.message || errMsg;
-        } catch {
-          // пустой или некорректный JSON
+        if (!res.ok) {
+          let errMsg = `Ошибка ${res.status}`
+          try {
+            const errJson = await res.json()
+            errMsg = errJson.message || errMsg
+          } catch {
+          }
+          throw new Error(errMsg)
         }
-        throw new Error(errMsg);
+
+        const text = await res.text()
+        const json = text ? JSON.parse(text) : {}
+
+        setForm({
+          name: '',
+          endpoint: '',
+          username: '',
+          password: '',
+          channel_count: '1',
+        })
+        await mutate('/api/dashboard/get-sip')
+
+        return json
+      })(),
+      {
+        loading: 'Сохраняем SIP…',
+        success: () => 'SIP был успешно создан!',
+        error: (err) => `Ошибка: ${err.message}`,
       }
-
-      // безопасно парсим JSON только если есть тело
-      const text = await res.text();
-      const json = text ? JSON.parse(text) : {};
-
-      setForm({ name: '', endpoint: '', username: '', password: '', channel_count: '1' });
-      await mutate('/api/dashboard/get-sip');
-      toast.success("SIP был успешно создан!");
-    } catch (err: any) {
-      toast.error('Произошла ошибка!', {
-        description: err.message
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    )
+  }
 
 
   return (
@@ -129,7 +132,7 @@ export default function SettingsCard() {
               value={form.channel_count}
               onValueChange={v => setForm(f => ({ ...f, channel_count: v }))}
             >
-              <SelectTrigger className="w-80 rounded-2xl">
+              <SelectTrigger id="sip-channels" className="w-80 rounded-2xl">
                 <SelectValue placeholder="Выберите" />
               </SelectTrigger>
               <SelectContent>
