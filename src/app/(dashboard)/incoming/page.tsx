@@ -29,32 +29,32 @@ interface IncomingCall {
 }
 
 const IncomingCallSchema = z.object({
-  id:           z.number(),
-  phone:        z.string(),
-  client_name:  z.string(),
-  start_date:   z.string().nullable(),
-  recording_url:z.string().nullable(),
+  id: z.number(),
+  phone: z.string(),
+  client_name: z.string(),
+  start_date: z.string().nullable(),
+  recording_url: z.string().nullable(),
 });
 
 const IncomingPageSchema = z.object({
-  calls:    z.array(IncomingCallSchema),
-  total:    z.number(),
-  page:     z.number(),
+  calls: z.array(IncomingCallSchema),
+  total: z.number(),
+  page: z.number(),
   per_page: z.number(),
 });
 
 
 const columns: ColumnDef<IncomingCall>[] = [
-  { accessorKey: 'id',          header: 'ID' },
-  { accessorKey: 'phone',       header: 'Телефон' },
+  { accessorKey: 'id', header: 'ID' },
+  { accessorKey: 'phone', header: 'Телефон' },
   { accessorKey: 'client_name', header: 'Клиент' },
   {
     accessorKey: 'start_date',
     header: 'Дата',
-    cell: info =>
-      info.getValue()
-        ? new Date(info.getValue() as string).toLocaleString()
-        : '—',
+    cell: info => {
+      const dateValue = info.getValue() as string | null;
+      return dateValue ?? '—';
+    },
   },
   {
     accessorKey: 'recording_url',

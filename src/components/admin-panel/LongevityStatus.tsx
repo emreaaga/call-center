@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -67,7 +68,6 @@ export function ChartAreaInteractive() {
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
           <AreaChart
             data={chartData}
-            margin={{ top: 0, right: 12, bottom: 0, left: 20 }}
           >
             <defs>
               <linearGradient id="fillCallCount" x1="0" y1="0" x2="0" y2="1">
@@ -107,6 +107,9 @@ export function ChartAreaInteractive() {
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
+        <CardFooter>
+          
+        </CardFooter>
       </CardContent>
     </Card>
   )

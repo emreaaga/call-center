@@ -7,9 +7,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { z } from 'zod';
 import { format } from 'date-fns';
 
-//
-// 1) Zod-схема под нужные поля
-//
 export const CampaignEntrySchema = z.object({
   id:            z.number(),
   uuid:          z.string(),
@@ -61,12 +58,12 @@ const columns: ColumnDef<CampaignEntry>[] = [
   {
     accessorKey: 'start_date',
     header: 'Начало',
-    cell: ({ getValue }) => formatCustomDate(getValue<string>()),
+    cell: ({ getValue }) => getValue<string>(),
   },
   {
     accessorKey: 'end_date',
     header: 'Окончание',
-    cell: ({ getValue }) => formatCustomDate(getValue<string>()),
+    cell: ({ getValue }) => getValue<string>(),
   },
 ];
 
